@@ -1,3 +1,4 @@
+import type { Request, Response, NextFunction } from "express";
 import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -8,7 +9,7 @@ import { status } from "./config/status.js";
 
 const app = express();
 
-const limiter = (limit) => rateLimit({
+const limiter = (limit: number) => rateLimit({
     windowMs: 15 * 60 * 1000,
     limit,
     standardHeaders: true,
@@ -43,7 +44,7 @@ app.use((req, res) => {
     return res.status(status.NOT_FOUND).json({ status: status.NOT_FOUND, message: "ROUTE NOT FOUND." });
 });
 
-app.use((err, req, res, next) => {
+app.use((err: Error & { type?: string }, req: Request, res: Response, next: NextFunction) => {
     if (err.type === "entity.parse.failed") {
         return res.status(status.BAD_REQUEST).json({ status: status.BAD_REQUEST, message: "INVALID JSON BODY." });
     }

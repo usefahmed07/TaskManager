@@ -1,7 +1,7 @@
 import express from "express";
 import { authUser } from "../../auth/auth.js";
 import { project } from "../../controllers/taskSchedule/project.js";
-const router = new express.Router();
+const router = express.Router();
 
 router.route("/")
 .post(authUser,project.addProject)

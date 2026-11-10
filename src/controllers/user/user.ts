@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import type { Request, Response } from "express";
 import { UserModel } from "../../model/user.js";
 import { status } from "../../config/status.js";
 import { message } from "../../config/message.js";
@@ -7,14 +8,25 @@ import { generateToken } from "../../service/createToken.js";
 import { sendingMail } from "../../service/verificationMail.js";
 import { generateOtp } from "../../util/generateOtp.js";
 import { sendResponse } from "../../util/sendResponse.js";
+import { errorMessage } from "../../util/errorMessage.js";
 
-const isText = (value) => typeof value === "string" && value.trim().length > 0;
-const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
-const mailConfigured = () => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+type UserDoc = InstanceType<typeof UserModel>;
+
+const isText = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
+const hash = (value: string): string => crypto.createHash("sha256").update(value).digest("hex");
+const mailConfigured = (): boolean => Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
 const PHONE_REGEX = /^\d{10,15}$/;
 const MIN_PASSWORD = 8;
 
-const publicUser = (user) => ({
+const hashPassword = async (password: string): Promise<string> => {
+    const hashed = await encryptPass(password);
+    if (!hashed) {
+        throw new Error("PASSWORD HASHING FAILED.");
+    }
+    return hashed;
+};
+
+const publicUser = (user: UserDoc) => ({
     _id: user._id,
     name: user.name,
     email: user.email,
@@ -23,7 +35,7 @@ const publicUser = (user) => ({
     createdAt: user.createdAt
 });
 
-const sendVerification = async (user) => {
+const sendVerification = async (user: UserDoc): Promise<void> => {
     const token = crypto.randomBytes(32).toString("hex");
     user.token = hash(token);
     user.tokenExpires = new Date(Date.now() + 60 * 60 * 1000);
@@ -39,7 +51,7 @@ const sendVerification = async (user) => {
     await sendingMail(user, "VERIFY", link);
 };
 
-const checkOtp = (user, otp) => {
+const checkOtp = (user: UserDoc, otp: unknown): string | null => {
     if (!isText(otp)) return message.EMPTY_FIELD;
     if (!user.otp || !user.otpExpiry || user.otpExpiry < new Date()) return message.OTP_EXPIRED;
 
@@ -52,7 +64,7 @@ const checkOtp = (user, otp) => {
 };
 
 class MyUser {
-    register = async (req, res) => {
+    register = async (req: Request, res: Response) => {
         try {
             const { name, email, phone, password } = req.body;
 
@@ -76,17 +88,17 @@ class MyUser {
                 name: name.trim(),
                 email: normalizedEmail,
                 phone: phone.trim(),
-                password: await encryptPass(password)
+                password: await hashPassword(password)
             });
 
             await sendVerification(user);
             return sendResponse(res, status.CREATED, message.REGISTER_SUCCESS);
         } catch (error) {
-            return sendResponse(res, status.BAD_REQUEST, error.message);
+            return sendResponse(res, status.BAD_REQUEST, errorMessage(error));
         }
-    }
+    };
 
-    verifyUser = async (req, res) => {
+    verifyUser = async (req: Request, res: Response) => {
         try {
             const user = await UserModel.findOne({ token: hash(String(req.params.token)) });
 
@@ -104,11 +116,11 @@ class MyUser {
 
             return sendResponse(res, status.SUCCESS, message.VERIFIED_SUCCESS);
         } catch (error) {
-            return sendResponse(res, status.BAD_REQUEST, error.message);
+            return sendResponse(res, status.BAD_REQUEST, errorMessage(error));
         }
-    }
+    };
 
-    login = async (req, res) => {
+    login = async (req: Request, res: Response) => {
         try {
             const { email, password } = req.body;
 
@@ -129,18 +141,18 @@ class MyUser {
             const token = await generateToken(user);
             return res.status(200).json({ status: status.SUCCESS, message: message.LOGIN_SUCCESS, token });
         } catch (error) {
-            return sendResponse(res, status.BAD_REQUEST, error.message);
+            return sendResponse(res, status.BAD_REQUEST, errorMessage(error));
         }
-    }
+    };
 
-    getUser = async (req, res) => {
-        return res.status(200).json({ status: status.SUCCESS, data: publicUser(req.user) });
-    }
+    getUser = async (req: Request, res: Response) => {
+        return res.status(200).json({ status: status.SUCCESS, data: publicUser(req.user!) });
+    };
 
-    updateUser = async (req, res) => {
+    updateUser = async (req: Request, res: Response) => {
         try {
             const { name, phone } = req.body;
-            const updates = {};
+            const updates: Record<string, string> = {};
 
             if (name !== undefined) {
                 if (!isText(name)) return sendResponse(res, status.BAD_REQUEST, message.EMPTY_FIELD);
@@ -156,16 +168,16 @@ class MyUser {
                 return sendResponse(res, status.NOT_ACCEPTABLE, message.EMPTY_FIELD);
             }
 
-            await UserModel.updateOne({ _id: req.user._id }, { $set: updates }, { runValidators: true });
+            await UserModel.updateOne({ _id: req.user!._id }, { $set: updates }, { runValidators: true });
             return sendResponse(res, status.SUCCESS, message.USER_UPDATE);
         } catch (error) {
-            return sendResponse(res, status.BAD_REQUEST, error.message);
+            return sendResponse(res, status.BAD_REQUEST, errorMessage(error));
         }
-    }
+    };
 
-    updateEmailUsingOtp = async (req, res) => {
+    updateEmailUsingOtp = async (req: Request, res: Response) => {
         try {
-            const user = req.user;
+            const user = req.user!;
             const otp = generateOtp(6);
 
             user.otp = hash(otp);
@@ -180,13 +192,13 @@ class MyUser {
 
             return sendResponse(res, status.SUCCESS, message.OTP_SENT);
         } catch (error) {
-            return sendResponse(res, status.BAD_REQUEST, error.message);
+            return sendResponse(res, status.BAD_REQUEST, errorMessage(error));
         }
-    }
+    };
 
-    updateEmail = async (req, res) => {
+    updateEmail = async (req: Request, res: Response) => {
         try {
-            const user = req.user;
+            const user = req.user!;
             const { otp, email } = req.body;
 
             if (!isText(email)) {
@@ -211,13 +223,13 @@ class MyUser {
 
             return sendResponse(res, status.SUCCESS, message.EMAIL_UPDATE);
         } catch (error) {
-            return sendResponse(res, status.BAD_REQUEST, error.message);
+            return sendResponse(res, status.BAD_REQUEST, errorMessage(error));
         }
-    }
+    };
 
-    updatePassword = async (req, res) => {
+    updatePassword = async (req: Request, res: Response) => {
         try {
-            const user = req.user;
+            const user = req.user!;
             const { otp, password, confirmPassword } = req.body;
 
             if (!isText(password) || !isText(confirmPassword)) {
@@ -238,16 +250,16 @@ class MyUser {
                 return sendResponse(res, status.BAD_REQUEST, message.PASSWORD_SAME);
             }
 
-            user.password = await encryptPass(password);
+            user.password = await hashPassword(password);
             user.otp = undefined;
             user.otpExpiry = undefined;
             await user.save();
 
             return sendResponse(res, status.SUCCESS, message.PASSWORD_UPDATE);
         } catch (error) {
-            return sendResponse(res, status.BAD_REQUEST, error.message);
+            return sendResponse(res, status.BAD_REQUEST, errorMessage(error));
         }
-    }
+    };
 }
 
 const userObj = new MyUser();

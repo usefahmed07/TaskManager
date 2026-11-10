@@ -17,7 +17,7 @@ A RESTful backend for managing projects and tasks, built with Node.js, Express a
 
 | Area | Tools |
 | --- | --- |
-| Runtime | Node.js (ES modules) |
+| Runtime | Node.js, TypeScript (ES modules) |
 | Framework | Express 4 |
 | Database | MongoDB with Mongoose 7 |
 | Auth | JSON Web Tokens, bcryptjs |
@@ -50,8 +50,9 @@ openssl rand -hex 32
 ### Run
 
 ```bash
-npm run dev     # development, restarts on file changes
-npm start       # production
+npm run dev     # development with tsx, restarts on file changes
+npm run build   # compile TypeScript to dist/
+npm start       # run the compiled build
 ```
 
 The server listens on `http://localhost:8000` by default. Check it with:
@@ -208,8 +209,8 @@ Rate limits per IP: 300 requests per 15 minutes on `/api`, and 20 per 15 minutes
 
 ```
 src/
-  app.js          Express app: middleware, routes, error handling
-  index.js        Entry point: connects to MongoDB, starts the server
+  app.ts          Express app: middleware, routes, error handling
+  index.ts        Entry point: connects to MongoDB, starts the server
   auth/           JWT authentication middleware
   config/         Status codes, messages, mail transport
   controllers/    Request handlers for users, projects and tasks
