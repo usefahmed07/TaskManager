@@ -1,18 +1,17 @@
 import "dotenv/config";
-import express from "express";
+import app from "./app.js";
 import connectDB from "./db/conn.js";
-import router from "./router/route.js";
-import morgan from "morgan";
-const app = express();
 
 const PORT = process.env.PORT || 8000;
 
-//convert every incoming request data into json data
-app.use(express.json());
-app.use(morgan("dev"))
-app.use(router);
+const start = async () => {
+    await connectDB();
+    app.listen(PORT, () => {
+        console.log(`server is listening to the port: ${PORT}`);
+    });
+};
 
-app.listen(PORT,async()=>{
-    console.log(`server is listening to the port: ${PORT}`);
-    await connectDB()
+start().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
 });

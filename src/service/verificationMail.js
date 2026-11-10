@@ -5,7 +5,7 @@ const sendingMail = async(user,type,data) =>{
         if(type === "VERIFY") {
             console.log("sending mail");
             await transporter.sendMail({
-                from:process.env.USER,
+                from:process.env.EMAIL_USER,
                 to:user.email,
                 subject:"Verify",
                 text:"",
@@ -15,7 +15,7 @@ const sendingMail = async(user,type,data) =>{
         }
         if(type === "OTP") {
             await transporter.sendMail({
-                from:process.env.USER,
+                from:process.env.EMAIL_USER,
                 to:user,
                 subject:"OTP",
                 text:"",
