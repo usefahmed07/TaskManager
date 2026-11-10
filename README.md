@@ -61,6 +61,16 @@ The server listens on `http://localhost:8000` by default. Check it with:
 curl http://localhost:8000/health
 ```
 
+### Docker
+
+Run the API and MongoDB together with one command:
+
+```bash
+docker compose up --build
+```
+
+The API is available at `http://localhost:8000`. Set `SECRET_KEY`, `BASE_URL`, `EMAIL_USER` and `EMAIL_PASS` in a `.env` file next to `docker-compose.yml` to override the defaults. Stop everything with `docker compose down` (add `-v` to also delete the database volume).
+
 ## Environment Variables
 
 | Variable | Required | Description |
@@ -223,8 +233,7 @@ src/
 
 ## Roadmap
 
-- Automated tests for authentication and task endpoints
-- Dockerfile and Docker Compose for the API and database
+- Automated tests for projects and tasks
 - OpenAPI documentation
 
 ## License
