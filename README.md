@@ -227,10 +227,6 @@ src/
 - Dockerfile and Docker Compose for the API and database
 - OpenAPI documentation
 
-## Author
-
-Youssef Ahmed - [github.com/usefahmed07](https://github.com/usefahmed07)
-
 ## License
 
 ISC
