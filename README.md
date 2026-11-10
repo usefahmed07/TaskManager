@@ -215,6 +215,16 @@ Errors use the same shape as other responses:
 
 Rate limits per IP: 300 requests per 15 minutes on `/api`, and 20 per 15 minutes on login and register.
 
+## Testing
+
+Tests use Vitest, Supertest and an in-memory MongoDB, so no running database is needed:
+
+```bash
+npm test
+```
+
+They cover authentication, per-user data isolation, pagination, filtering, search and sorting.
+
 ## Project Structure
 
 ```
@@ -233,7 +243,6 @@ src/
 
 ## Roadmap
 
-- Automated tests for projects and tasks
 - OpenAPI documentation
 
 ## License
