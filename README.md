@@ -1,6 +1,6 @@
 # Task Manager API
 
-A RESTful backend for managing projects and tasks, built with Node.js, Express and MongoDB. Users register, verify their email, log in with a JWT and manage their own projects and tasks, with filtering, search, sorting and pagination.
+An open-source RESTful backend for managing projects and tasks, built with Node.js, TypeScript, Express and MongoDB. Users register, verify their email, log in with a JWT and manage their own projects and tasks, with filtering, search, sorting and pagination.
 
 ## Features
 
@@ -241,10 +241,23 @@ src/
   util/           OTP generation, response helper
 ```
 
+## Contributing
+
+Contributions are welcome. To report a bug or suggest a feature, open an issue with clear steps to reproduce it. To contribute code:
+
+1. Fork the repository and clone your fork.
+2. Create a branch: `git checkout -b my-change`
+3. Install and start the project as described in [Getting Started](#getting-started).
+4. Make your change and add or update tests in `tests/`.
+5. Run `npm test` and `npm run build`, and make sure both pass.
+6. Push your branch and open a pull request against `main`, describing what changed and why.
+
+Keep pull requests small and focused, and follow the existing code style.
+
 ## Roadmap
 
 - OpenAPI documentation
 
 ## License
 
-ISC
+ISC. See [LICENSE](LICENSE).
