@@ -1,5 +1,5 @@
 import express from "express";
-const router = new express.Router();
+const router = express.Router();
 import { authUser } from "../../auth/auth.js";
 import {taskObj} from "../../controllers/taskSchedule/task.js";
 

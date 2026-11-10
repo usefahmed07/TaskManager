@@ -1,7 +1,7 @@
 import { userObj } from "../../controllers/user/user.js";
 import { authUser } from "../../auth/auth.js";
 import express from "express";
-const router = new express.Router();
+const router = express.Router();
 
 //sign-up route
 router.route("/register").post(userObj.register);
