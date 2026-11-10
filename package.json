@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "task-manager-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "REST API for managing projects and tasks with JWT authentication",
   "main": "index.js",
   "type": "module",
   "scripts": {
